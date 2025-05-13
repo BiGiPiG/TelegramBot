@@ -103,7 +103,7 @@ public class ShareService {
 
     @Async
     public CompletableFuture<String> getSmartAnalyse(String ticker) {
-        String apiUrl = "http://127.0.0.1:8000/smartAnalyze/";
+        String apiUrl = "http://analyzer:8000/smartAnalyze";
         try {
 
             ShareDTO share = calculateValuationMetrics(ticker);

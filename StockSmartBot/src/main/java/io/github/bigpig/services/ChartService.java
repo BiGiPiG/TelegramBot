@@ -41,12 +41,12 @@ public class ChartService {
     }
 
     public void generateChart(String ticker) throws IOException {
-        String urlString = UriComponentsBuilder.fromUriString("https://www.alphavantage.co/query")
-                .queryParam("function", "TIME_SERIES_DAILY")
-                .queryParam("symbol", ticker)
-                .queryParam("apikey", apiKey)
-                .toUriString();
-//        String urlString = "https://run.mocky.io/v3/f7165331-8668-4b50-bfee-9ec88c072e39";
+//        String urlString = UriComponentsBuilder.fromUriString("https://www.alphavantage.co/query")
+//                .queryParam("function", "TIME_SERIES_DAILY")
+//                .queryParam("symbol", ticker)
+//                .queryParam("apikey", apiKey)
+//                .toUriString();
+        String urlString = "https://run.mocky.io/v3/f7165331-8668-4b50-bfee-9ec88c072e39";
 
         // Получение JSON
         ResponseEntity<StockDataDTO> stockDataResponse = restTemplate.getForEntity(urlString, StockDataDTO.class);

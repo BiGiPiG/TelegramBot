@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field
 from g4f.client import Client
 import logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -62,9 +62,9 @@ class Share(BaseModel):
 
 @app.post("/smartAnalyze/")
 async def create_item(share: Share):
-    logger.info("Запрос обрабатывается")
+    # logger.info("Запрос обрабатывается")
     analyze = get_analyze(share)
-    logger.info("Обработка завершена")
+    # logger.info("Обработка завершена")
     return analyze
 
 
