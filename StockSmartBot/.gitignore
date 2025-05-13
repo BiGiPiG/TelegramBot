@@ -40,3 +40,5 @@ build/
 .idea
 
 application.properties
+Dockerfile
+
