@@ -1,10 +1,10 @@
 package io.github.bigpig.controllers;
 
 import io.github.bigpig.dto.ShareDTO;
-import io.github.bigpig.exceptions.CalculateValuationException;
-import io.github.bigpig.exceptions.ExternalApiException;
-import io.github.bigpig.exceptions.ShareNotFoundException;
+import io.github.bigpig.exceptions.SmartAnalysisException;
+import io.github.bigpig.handlers.BotExceptionHandler;
 import io.github.bigpig.services.ChartService;
+import io.github.bigpig.services.MessageService;
 import io.github.bigpig.services.ShareService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,12 +33,16 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     ShareService shareService;
     ChartService chartService;
+    MessageService messageService;
+    BotExceptionHandler botExceptionHandler;
 
     public TelegramBot(@Value("${bot.token}")String botToken,
-                       ShareService shareService, ChartService chartService) {
+                       ShareService shareService, ChartService chartService, MessageService messageService, BotExceptionHandler botExceptionHandler) {
         super(botToken);
         this.shareService = shareService;
         this.chartService = chartService;
+        this.messageService = messageService;
+        this.botExceptionHandler = botExceptionHandler;
     }
 
     private static final String HELP_COMMAND = "/help";
@@ -88,173 +92,85 @@ public class TelegramBot extends TelegramLongPollingBot {
                 default:
                     System.out.println("Unknown command: " + message[0]);
             }
-        } catch (ShareNotFoundException e) {
-            log.warn("Тикер не найден: {}", e.getMessage());
-            sendMessage(id, escapeMarkdownSymbols("❌ Не удалось найти информацию по тикеру. Попробуйте другой."));
-        } catch (ExternalApiException e) {
-            log.error("Ошибка обращения к внешнему API: {}", e.getMessage(), e);
-            sendMessage(id, escapeMarkdownSymbols("⚠️ Временная ошибка при получении данных. Пожалуйста, повторите позже."));
         } catch (Exception e) {
-            log.error("Непредвиденная ошибка: {}", e.getMessage(), e);
-            sendMessage(id, escapeMarkdownSymbols("❗ Произошла ошибка. Попробуйте снова позже."));
+            String errorMsg = messageService.generateErrorMessage(botExceptionHandler.handleException(e));
+            sendMessage(id, errorMsg);
         }
     }
 
     public void helpCommand(long chatId) {
-        String helpText = """
-        📊 *Bot Commands Help* 📊
-        
-        *MarketInsightBot* -Your Market Analysis Assistant:
-        - 📈 Stocks, ETFs and Cryptocurrencies
-        - 🤖 AI-аналитика и прогнозирование
-        - 🔍 Ключевые финансовые метрики
-        
-        🔹 *Основные команды*
-        /start - Начать работу
-        /help - Справка по командам
-        
-        📈 *Анализ активов*
-        /getValuationMetrics [тикер] - Основные метрики (P/E, P/S и др.)
-        
-        🤖 *AI-аналитика*
-        /getSmartAnalyse [тикер] - Анализ с искусственным интеллектом
-        
-        🖼 *Визуализация данных*
-        /getChart [тикер]
-        
-        📌 *Примеры запросов*
-        `/getValuationMetrics AAPL` - анализ Apple
-        `/getSmartAnalyse AAPL` - AI-разбор Apple
-        `/getChart AAPL` - график для Apple
-        """;
-
-        helpText = escapeMarkdownSymbols(helpText);
-        SendMessage message = SendMessage.builder()
-                .chatId(Long.toString(chatId))
-                .text(helpText)
-                .parseMode("MarkdownV2")
-                .build();
-
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
+        String cmdText = messageService.generateHelpCommand();
+        sendMessage(chatId, cmdText);
     }
 
     public void startCommand(long chatId) {
-        String startText = """
-        🚀 *Добро пожаловать в MarketInsightBot!* 🚀
-
-        *Ваш персональный помощник для анализа рынков:*
-        - 📊 Ключевые метрики (P/E, P/S и др.)
-        - 🤖 AI-анализ
-        - 📈 Визуализация данных
-
-        🔍 *Как начать?*
-        Просто введите команду с тикером интересующего актива:
-
-        `/getValuationMetrics MSFT` - анализ Microsoft
-        `/getSmartAnalyse MSFT` - AI-разбор Microsoft
-
-        📌 Для всех команд напишите /help
-        """;
-
-        startText = escapeMarkdownSymbols(startText);
-        sendMessage(chatId, startText);
+        String cmdText = messageService.generateStartCommand();
+        sendMessage(chatId, cmdText);
     }
 
     public void getValuationMetrics(long chatId, String ticker) {
         ShareDTO curShare;
-        try {
-            curShare = shareService.calculateValuationMetrics(ticker);
-        } catch (CalculateValuationException e) {
-            sendMessage(chatId, escapeMarkdownSymbols("⚠️ Не удалось получить информацию по тикеру"));
-            return;
-        }
+        curShare = shareService.calculateValuationMetrics(ticker);
 
-        String ansText = escapeMarkdownSymbols(String.format("""
-                    📈 *%s*:
-                  
-                    Price: `%s`
-             
-                    *Description*
-                 
-                    %s
-                 
-                    💹 *Daily Price Metrics*
-                  
-                    ▫️ High: `%s`
-                    ▫️ Low: `%s`
-                    ▫️ Change: `%s (%s%%)`
-                    ▫️ Volume: `%s`
+        String cmdText = messageService.generateGetValuationMetricsCommand(curShare);
 
-                    📊 *Fundamental Metrics*
-
-                    P/E (Price/Earn): %s
-                    P/B (Price/Book): %s
-                    P/S (Price/Sale): %s
-                    Market Capitalisation: %s
-                    EPS: %s
-                    Book Value: %s
-                  """,
-                String.format("%s", curShare.getName()),
-                String.format("%s", curShare.getGlobalQuote().getCurrentPrice()),
-                String.format("%s", curShare.getDescription().replace("'", "").replace("`", "")),
-                String.format("%s", curShare.getGlobalQuote().getHighPrice()),
-                String.format("%s", curShare.getGlobalQuote().getLowPrice()),
-                String.format("%s", curShare.getGlobalQuote().getPriceChange()),
-                curShare.getGlobalQuote().getChangePercent().replace("%", ""),
-                String.format("%s", curShare.getGlobalQuote().getVolume()),
-                String.format("%.2f", curShare.getPeRatio()),
-                String.format("%.2f", curShare.getPbRatio()),
-                String.format("%.2f", curShare.getPriceToSales()),
-                curShare.getMarketCap(),
-                String.format("%.2f", curShare.getEps()),
-                String.format("%.2f", curShare.getBookValue())
-        ));
-
-        sendMessage(chatId, ansText);
+        sendMessage(chatId, cmdText);
     }
 
     public void getAsyncSmartAnalyse(long chatId, String ticker) {
-
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        int messageId = sendMessage(chatId, "\uD83D\uDD04 Запрос обрабатывается");
+        int messageId = sendMessage(chatId, messageService.generateProcessingMessage(0));
 
         AtomicInteger dotCount = new AtomicInteger(1);
 
         executor.scheduleAtFixedRate(() -> {
             int dots = dotCount.getAndIncrement() % 4; // 0 to 3
-            String dotStr = ".".repeat(dots);
 
-            String updatedText = escapeMarkdownSymbols("\uD83D\uDD04 Запрос обрабатывается" + dotStr);
-            editMessage(chatId, messageId, updatedText);
+            String updatedText = messageService.generateProcessingMessage(dots);
+            try {
+                editMessage(chatId, messageId, updatedText);
+            } catch (TelegramApiException e) {
+                String errorMessage = botExceptionHandler.handleException(e);
+                sendMessage(chatId, messageService.generateErrorMessage(errorMessage));
+            }
         }, 1, 1, TimeUnit.SECONDS);
 
         shareService.getSmartAnalyse(ticker).thenAccept(result -> {
             executor.shutdownNow();
 
-            deleteMessage(chatId, messageId);
+            try {
+                deleteMessage(chatId, messageId);
+            } catch (TelegramApiException e) {
+                String errorMessage = botExceptionHandler.handleException(e);
+                sendMessage(chatId, messageService.generateErrorMessage(errorMessage));
+                return;
+            }
 
-            sendMessage(chatId, escapeMarkdownSymbols(result.substring(1, result.length() - 1)));
+            sendMessage(chatId, messageService.generateSmartAnalyseResult(result));
         }).exceptionally(ex -> {
             executor.shutdownNow();
 
-            deleteMessage(chatId, messageId);
+            try {
+                deleteMessage(chatId, messageId);
+            } catch (TelegramApiException e) {
+                String errorMessage = botExceptionHandler.handleException(e);
+                sendMessage(chatId, messageService.generateErrorMessage(errorMessage));
+            }
 
-            sendMessage(chatId, escapeMarkdownSymbols("❌ Ошибка анализа: " + ex.getMessage()));
+            Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+            SmartAnalysisException analysisException;
+
+            if (cause instanceof SmartAnalysisException) {
+                analysisException = (SmartAnalysisException) cause;
+            } else {
+                analysisException = new SmartAnalysisException("Ошибка анализа", cause);
+            }
+
+            String errorMessage = botExceptionHandler.handleException(analysisException);
+            sendMessage(chatId, messageService.generateErrorMessage(errorMessage));
+
             return null;
         });
-    }
-
-    public String escapeMarkdownSymbols(String text) {
-        text = text.replace("\\n", "\n");
-        String[] symbols = {"_", "[", "]", "(", ")", "~", ">", "#", "+", "-", "=", "|", ".", "!", ":"};
-        for (String symbol : symbols) {
-            text = text.replace(symbol, "\\" + symbol);
-        }
-        return text.replace("**", "*");
     }
 
     private int sendMessage(long chatId, String text) {
@@ -271,7 +187,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-    private void editMessage(long chatId, int messageId, String text) {
+    private void editMessage(long chatId, int messageId, String text) throws TelegramApiException {
         EditMessageText editMessage = EditMessageText.builder()
                 .chatId(Long.toString(chatId))
                 .messageId(messageId)
@@ -279,24 +195,16 @@ public class TelegramBot extends TelegramLongPollingBot {
                 .parseMode("MarkdownV2")
                 .build();
 
-        try {
-            execute(editMessage);
-        } catch (TelegramApiException e) {
-            sendMessage(chatId, "⚠️ Не удалось обновить сообщение: " + e.getMessage());
-        }
+        execute(editMessage);
     }
 
-    public void deleteMessage(long chatId, int messageId) {
+    public void deleteMessage(long chatId, int messageId) throws TelegramApiException {
         DeleteMessage deleteMessage = DeleteMessage.builder()
                 .chatId(Long.toString(chatId))
                 .messageId(messageId)
                 .build();
 
-        try {
-            execute(deleteMessage);
-        } catch (TelegramApiException e) {
-            log.warn("⚠️ Не удалось удалить сообщение: {}", e.getMessage(), e);
-        }
+        execute(deleteMessage);
     }
 
     public void getChart(long chatId, String ticker) throws TelegramApiException, IOException {

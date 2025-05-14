@@ -8,4 +8,6 @@ public class SmartAnalysisException extends RuntimeException {
     public SmartAnalysisException(String message, Throwable cause) {
         super(message, cause);
     }
+
+    public SmartAnalysisException() {}
 }
