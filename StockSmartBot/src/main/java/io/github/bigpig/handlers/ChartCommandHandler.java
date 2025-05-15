@@ -2,7 +2,6 @@ package io.github.bigpig.handlers;
 
 import io.github.bigpig.services.ChartService;
 import io.github.bigpig.services.MessageService;
-import io.github.bigpig.services.ShareService;
 import io.github.bigpig.utils.BotCommandHandler;
 import io.github.bigpig.utils.TelegramSender;
 import org.springframework.stereotype.Component;
