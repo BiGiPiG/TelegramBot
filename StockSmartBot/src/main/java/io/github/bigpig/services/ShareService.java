@@ -18,6 +18,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -63,7 +64,7 @@ public class ShareService {
                 getForEntity(globalQuoteUrl, GlobalQuoteResponse.class);
 
         GlobalQuoteResponse body = extractBodyOrThrow(response, "Failed to fetch global quote data");
-        GlobalQuoteDTO globalQuote = body.getGlobalQuote();
+        GlobalQuoteDTO globalQuote = body.globalQuote();
 
         if (globalQuote == null) {
             throw new ShareNotFoundException("Global quote not found for ticker: " + ticker);
@@ -103,11 +104,13 @@ public class ShareService {
 
     @Async
     public CompletableFuture<String> getSmartAnalyse(String ticker) {
-        String apiUrl = "http://analyzer:8000/smartAnalyze";
+        String apiUrl = "http://localhost:8000/smartAnalyze/";
         try {
 
             ShareDTO share = calculateValuationMetrics(ticker);
             String jsonBody = objectMapper.writeValueAsString(share);
+
+            System.out.println(jsonBody);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -131,7 +134,7 @@ public class ShareService {
         } catch (ResourceAccessException e) {
             throw new SmartAnalysisException("Cannot reach Smart Analysis API. Please check if the server is running.", e);
         } catch (Exception e) {
-            throw new SmartAnalysisException("Unexpected error while processing smart analysis for " + ticker + e.getMessage(), e);
+            throw new SmartAnalysisException("Unexpected error while processing smart analysis for " + ticker + Arrays.toString(e.getStackTrace()), e);
         }
     }
 }

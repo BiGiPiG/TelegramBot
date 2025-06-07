@@ -55,7 +55,7 @@ public class ChartService {
         Map<LocalDate, DailyDataDTO> sortedTimeSeries = new TreeMap<>(timeSeriesDaily);
         sortedTimeSeries.entrySet().stream()
                 .skip(Math.max(0, sortedTimeSeries.size() - MAX_DAYS))
-                .forEach(entry -> dataset.addValue(Double.parseDouble(entry.getValue().close), "Price", entry.getKey().toString()));
+                .forEach(entry -> dataset.addValue(Double.parseDouble(entry.getValue().close()), "Price", entry.getKey().toString()));
 
 
         // Построение графика
@@ -73,7 +73,7 @@ public class ChartService {
         }
 
         StockDataDTO stockData = stockDataResponse.getBody();
-        Map<LocalDate, DailyDataDTO> timeSeriesDaily = stockData.getTimeSeriesDaily();
+        Map<LocalDate, DailyDataDTO> timeSeriesDaily = stockData.timeSeriesDaily();
         if (timeSeriesDaily == null || timeSeriesDaily.isEmpty()) {
             throw new IOException("Пустые данные по акциям для " + ticker);
         }

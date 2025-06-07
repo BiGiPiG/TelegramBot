@@ -8,12 +8,10 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.TreeMap;
 
-@Data
-public class StockDataDTO {
-    @JsonProperty("Meta Data")
-    public MetaDataDTO metaData;
+public record StockDataDTO (
+    @JsonProperty("Meta Data") MetaDataDTO metaData,
 
     @JsonProperty("Time Series (Daily)")
     @JsonDeserialize(using = LocalDateKeyMapDeserializer.class)
-    public TreeMap<LocalDate, DailyDataDTO> timeSeriesDaily;
-}
+    TreeMap<LocalDate, DailyDataDTO> timeSeriesDaily
+) {}

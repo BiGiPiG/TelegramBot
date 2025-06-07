@@ -18,8 +18,8 @@ public class MessageService {
         🔍 *Как начать?*
         Просто введите команду с тикером интересующего актива:
 
-        `/getValuationMetrics MSFT` - анализ Microsoft
-        `/getSmartAnalyse MSFT` - AI-разбор Microsoft
+        `/getValuationMetrics IBM` - анализ IBM
+        `/getSmartAnalyse IBM` - AI-разбор IBM
 
         📌 Для всех команд напишите /help
         """;
@@ -50,9 +50,9 @@ public class MessageService {
         /getChart [тикер]
         
         📌 *Примеры запросов*
-        `/getValuationMetrics AAPL` - анализ Apple
-        `/getSmartAnalyse AAPL` - AI-разбор Apple
-        `/getChart AAPL` - график для Apple
+        `/getValuationMetrics IBM` - анализ IBM
+        `/getSmartAnalyse IBM` - AI-разбор IBM
+        `/getChart IBM` - график для IBM
         """;
 
         return escapeMarkdownSymbols(helpText);
@@ -85,13 +85,13 @@ public class MessageService {
                     Book Value: %s
                   """,
                 String.format("%s", curShare.getName()),
-                String.format("%s", curShare.getGlobalQuote().getCurrentPrice()),
+                String.format("%s", curShare.getGlobalQuote().currentPrice()),
                 String.format("%s", curShare.getDescription().replace("'", "").replace("`", "")),
-                String.format("%s", curShare.getGlobalQuote().getHighPrice()),
-                String.format("%s", curShare.getGlobalQuote().getLowPrice()),
-                String.format("%s", curShare.getGlobalQuote().getPriceChange()),
-                curShare.getGlobalQuote().getChangePercent().replace("%", ""),
-                String.format("%s", curShare.getGlobalQuote().getVolume()),
+                String.format("%s", curShare.getGlobalQuote().highPrice()),
+                String.format("%s", curShare.getGlobalQuote().lowPrice()),
+                String.format("%s", curShare.getGlobalQuote().priceChange()),
+                curShare.getGlobalQuote().changePercent().replace("%", ""),
+                String.format("%s", curShare.getGlobalQuote().volume()),
                 String.format("%.2f", curShare.getPeRatio()),
                 String.format("%.2f", curShare.getPbRatio()),
                 String.format("%.2f", curShare.getPriceToSales()),
