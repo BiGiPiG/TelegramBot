@@ -1,84 +1,42 @@
 package io.github.bigpig.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Component
-public class ShareDTO {
-    @JsonProperty("Symbol")
-    private String symbol;
-
-    @JsonProperty("Name")
-    private String name;
-
-    @JsonProperty("Sector")
-    private String sector;
-
-    @JsonProperty("Industry")
-    private String industry;
-
-    @JsonProperty("Country")
-    private String country;
-
-    @JsonProperty("Description")
-    private String description;
-
-    @JsonProperty("EPS")
-    private double eps;
-
-    @JsonProperty("PriceToSalesRatioTTM")
-    private double priceToSales;
-
-    @JsonProperty("MarketCapitalization")
-    private double marketCap;
-
-    @JsonProperty("DilutedEPSTTM")
-    private double earningsPerShare;
-
-    @JsonProperty("BookValue")
-    private double bookValue;
-
-    @JsonProperty("Global Quote")
-    private GlobalQuoteDTO globalQuote;
-
-    @JsonProperty("PriceToBookRatio")
-    private double pbRatio;
-
-    @JsonProperty("PERatio")
-    private double peRatio;
-
-    @JsonProperty("EBITDA")
-    private double ebitda;
-
-    @JsonProperty("RevenueTTM")
-    private double revenue;
-
-    @JsonProperty("GrossProfitTTM")
-    private double grossProfit;
-
-    @JsonProperty("DividendYield")
-    private double dividendYield;
-
-    @JsonProperty("ReturnOnEquityTTM")
-    private double returnOnEquity;
-
-    @JsonProperty("ProfitMargin")
-    private double profitMargin;
-
-    @JsonProperty("PEGRatio")
-    private double pegRatio;
-
-    @JsonProperty("EVToEBITDA")
-    private double EVToEBITDA;
-
-    @JsonProperty("AnalystTargetPrice")
-    private double analystTargetPrice;
+public record ShareDTO(
+        @JsonProperty("Symbol") String symbol,
+        @JsonProperty("Name") String name,
+        @JsonProperty("Sector") String sector,
+        @JsonProperty("Industry") String industry,
+        @JsonProperty("Country") String country,
+        @JsonProperty("Description") String description,
+        @JsonProperty("EPS") double eps,
+        @JsonProperty("PriceToSalesRatioTTM") double priceToSales,
+        @JsonProperty("MarketCapitalization") double marketCap,
+        @JsonProperty("DilutedEPSTTM") double earningsPerShare,
+        @JsonProperty("BookValue") double bookValue,
+        @JsonProperty("Global Quote") GlobalQuoteDTO globalQuote,
+        @JsonProperty("PriceToBookRatio") double pbRatio,
+        @JsonProperty("PERatio") double peRatio,
+        @JsonProperty("EBITDA") double ebitda,
+        @JsonProperty("RevenueTTM") double revenue,
+        @JsonProperty("GrossProfitTTM") double grossProfit,
+        @JsonProperty("DividendYield") double dividendYield,
+        @JsonProperty("ReturnOnEquityTTM") double returnOnEquity,
+        @JsonProperty("ProfitMargin") double profitMargin,
+        @JsonProperty("PEGRatio") double pegRatio,
+        @JsonProperty("EVToEBITDA") double EVToEBITDA,
+        @JsonProperty("AnalystTargetPrice") double analystTargetPrice
+) {
+    public ShareDTO withGlobalQuote(GlobalQuoteDTO newGlobalQuote) {
+        return new ShareDTO(
+                symbol, name, sector, industry, country, description,
+                eps, priceToSales, marketCap, earningsPerShare, bookValue,
+                newGlobalQuote,
+                pbRatio, peRatio, ebitda, revenue, grossProfit,
+                dividendYield, returnOnEquity, profitMargin, pegRatio,
+                EVToEBITDA, analystTargetPrice
+        );
+    }
 }

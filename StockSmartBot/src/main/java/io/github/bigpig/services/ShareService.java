@@ -40,11 +40,7 @@ public class ShareService {
 
             GlobalQuoteDTO globalQuoteDTO = fetchGlobalQuote(ticker);
 
-            ShareDTO shareDTO = fetchShareDTO(ticker);
-
-            shareDTO.setGlobalQuote(globalQuoteDTO);
-
-            return shareDTO;
+            return fetchShareDTO(ticker).withGlobalQuote(globalQuoteDTO);
         } catch (NumberFormatException e) {
             throw new CalculateValuationException("Error parsing numeric values from API for ticker: " + ticker, e);
         } catch (RestClientException e) {

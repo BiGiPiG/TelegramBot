@@ -84,20 +84,20 @@ public class MessageService {
                     EPS: %s
                     Book Value: %s
                   """,
-                String.format("%s", curShare.getName()),
-                String.format("%s", curShare.getGlobalQuote().currentPrice()),
-                String.format("%s", curShare.getDescription().replace("'", "").replace("`", "")),
-                String.format("%s", curShare.getGlobalQuote().highPrice()),
-                String.format("%s", curShare.getGlobalQuote().lowPrice()),
-                String.format("%s", curShare.getGlobalQuote().priceChange()),
-                curShare.getGlobalQuote().changePercent().replace("%", ""),
-                String.format("%s", curShare.getGlobalQuote().volume()),
-                String.format("%.2f", curShare.getPeRatio()),
-                String.format("%.2f", curShare.getPbRatio()),
-                String.format("%.2f", curShare.getPriceToSales()),
-                curShare.getMarketCap(),
-                String.format("%.2f", curShare.getEps()),
-                String.format("%.2f", curShare.getBookValue())
+                String.format("%s", curShare.name()),
+                String.format("%s", curShare.globalQuote().currentPrice()),
+                String.format("%s", curShare.description().replace("'", "").replace("`", "")),
+                String.format("%s", curShare.globalQuote().highPrice()),
+                String.format("%s", curShare.globalQuote().lowPrice()),
+                String.format("%s", curShare.globalQuote().priceChange()),
+                curShare.globalQuote().changePercent().replace("%", ""),
+                String.format("%s", curShare.globalQuote().volume()),
+                String.format("%.2f", curShare.peRatio()),
+                String.format("%.2f", curShare.pbRatio()),
+                String.format("%.2f", curShare.priceToSales()),
+                curShare.marketCap(),
+                String.format("%.2f", curShare.eps()),
+                String.format("%.2f", curShare.bookValue())
         );
 
         return escapeMarkdownSymbols(valuationMetricsText);
