@@ -1,9 +1,9 @@
 package io.github.bigpig.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
+import lombok.With;
 
-@Builder
+@With
 public record ShareDTO(
         @JsonProperty("Symbol") String symbol,
         @JsonProperty("Name") String name,
@@ -28,15 +28,4 @@ public record ShareDTO(
         @JsonProperty("PEGRatio") double pegRatio,
         @JsonProperty("EVToEBITDA") double EVToEBITDA,
         @JsonProperty("AnalystTargetPrice") double analystTargetPrice
-) {
-    public ShareDTO withGlobalQuote(GlobalQuoteDTO newGlobalQuote) {
-        return new ShareDTO(
-                symbol, name, sector, industry, country, description,
-                eps, priceToSales, marketCap, earningsPerShare, bookValue,
-                newGlobalQuote,
-                pbRatio, peRatio, ebitda, revenue, grossProfit,
-                dividendYield, returnOnEquity, profitMargin, pegRatio,
-                EVToEBITDA, analystTargetPrice
-        );
-    }
-}
+) {}
