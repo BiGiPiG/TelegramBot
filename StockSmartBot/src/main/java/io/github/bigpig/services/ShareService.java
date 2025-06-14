@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bigpig.dto.GlobalQuoteDTO;
 import io.github.bigpig.dto.GlobalQuoteResponse;
 import io.github.bigpig.dto.ShareDTO;
-import io.github.bigpig.exceptions.ExternalApiException;
-import io.github.bigpig.exceptions.ShareNotFoundException;
-import io.github.bigpig.exceptions.CalculateValuationException;
-import io.github.bigpig.exceptions.SmartAnalysisException;
+import io.github.bigpig.exceptions.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
@@ -51,10 +48,10 @@ public class ShareService {
     }
 
     public GlobalQuoteDTO fetchGlobalQuote(String ticker) {
-        //String globalQuoteUrl = buildUrl(ticker, "GLOBAL_QUOTE");
+        String globalQuoteUrl = buildUrl(ticker, "GLOBAL_QUOTE");
 
-        //для отладки
-        String globalQuoteUrl = "https://run.mocky.io/v3/e59fd1a6-83a1-40ff-955e-a705de55bf73";
+        // для отладки
+        // String globalQuoteUrl = "https://run.mocky.io/v3/e59fd1a6-83a1-40ff-955e-a705de55bf73";
 
         ResponseEntity<GlobalQuoteResponse> response = restTemplate.
                 getForEntity(globalQuoteUrl, GlobalQuoteResponse.class);
@@ -63,23 +60,21 @@ public class ShareService {
         GlobalQuoteDTO globalQuote = body.globalQuote();
 
         if (globalQuote == null) {
-            throw new ShareNotFoundException("Global quote not found for ticker: " + ticker);
+            throw new GlobalQuoteNotFoundException("Global quote not found for ticker: " + ticker);
         }
 
         return globalQuote;
     }
 
     public ShareDTO fetchShareDTO(String ticker) {
-        //String overviewUrl = buildUrl(ticker, "OVERVIEW");
+        String overviewUrl = buildUrl(ticker, "OVERVIEW");
 
-        //для отладки
-        String overviewUrl = "https://run.mocky.io/v3/90c6759a-0a71-4b8c-94aa-0b9859c51f9a";
         ResponseEntity<ShareDTO> shareDTOResponse = restTemplate.getForEntity(overviewUrl, ShareDTO.class);
 
         return extractBodyOrThrow(shareDTOResponse, "Failed to fetch shareDTO data");
     }
 
-    private String buildUrl(String ticker, String func) {
+    public String buildUrl(String ticker, String func) {
         return UriComponentsBuilder.fromUriString("https://www.alphavantage.co/query")
                 .queryParam("function", func)
                 .queryParam("symbol", ticker)
@@ -87,13 +82,13 @@ public class ShareService {
                 .toUriString();
     }
 
-    private <T> T extractBodyOrThrow(ResponseEntity<T> response, String errorMessage) {
+    public <T> T extractBodyOrThrow(ResponseEntity<T> response, String errorMessage) {
         if (response.getStatusCode().isError()) {
-            throw new ExternalApiException(errorMessage + " Status: " + response.getStatusCode());
+            throw new ExternalApiException(errorMessage + ". Status: " + response.getStatusCode());
         }
         T body = response.getBody();
         if (body == null) {
-            throw new ShareNotFoundException(errorMessage + " Response body is null");
+            throw new NullResponseBodyException(errorMessage + ". Response body is null");
         }
         return body;
     }
