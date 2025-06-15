@@ -3,95 +3,40 @@ package io.github.bigpig.services;
 import io.github.bigpig.dto.ShareDTO;
 import org.springframework.stereotype.Service;
 
+import java.text.MessageFormat;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 @Service
 public class MessageService {
 
-    public String generateStartCommand() {
-        String startText = """
-        🚀 *Добро пожаловать в MarketInsightBot!* 🚀
-
-        *Ваш персональный помощник для анализа рынков:*
-        - 📊 Ключевые метрики (P/E, P/S и др.)
-        - 🤖 AI-анализ
-        - 📈 Визуализация данных
-
-        🔍 *Как начать?*
-        Просто введите команду с тикером интересующего актива:
-
-        `/getValuationMetrics IBM` - анализ IBM
-        `/getSmartAnalyse IBM` - AI-разбор IBM
-
-        📌 Для всех команд напишите /help
-        """;
+    public String generateStartCommand(Locale locale) {
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", locale);
+        String startText = bundle.getString("startText");
 
         return escapeMarkdownSymbols(startText);
     }
 
-    public String generateHelpCommand() {
-        String helpText = """
-        📊 *Bot Commands Help* 📊
-        
-        *MarketInsightBot* -Your Market Analysis Assistant:
-        - 📈 Stocks, ETFs and Cryptocurrencies
-        - 🤖 AI-аналитика и прогнозирование
-        - 🔍 Ключевые финансовые метрики
-        
-        🔹 *Основные команды*
-        /start - Начать работу
-        /help - Справка по командам
-        
-        📈 *Анализ активов*
-        /getValuationMetrics [тикер] - Основные метрики (P/E, P/S и др.)
-        
-        🤖 *AI-аналитика*
-        /getSmartAnalyse [тикер] - Анализ с искусственным интеллектом
-        
-        🖼 *Визуализация данных*
-        /getChart [тикер]
-        
-        📌 *Примеры запросов*
-        `/getValuationMetrics IBM` - анализ IBM
-        `/getSmartAnalyse IBM` - AI-разбор IBM
-        `/getChart IBM` - график для IBM
-        """;
+    public String generateHelpCommand(Locale locale) {
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", locale);
+        String helpText = bundle.getString("helpText");
 
         return escapeMarkdownSymbols(helpText);
     }
 
-    public String generateGetValuationMetricsCommand(ShareDTO curShare) {
-        String valuationMetricsText = String.format("""
-                    📈 *%s*:
-                  
-                    Price: `%s`
-             
-                    *Description*
-                 
-                    %s
-                 
-                    💹 *Daily Price Metrics*
-                  
-                    ▫️ High: `%s`
-                    ▫️ Low: `%s`
-                    ▫️ Change: `%s (%s%%)`
-                    ▫️ Volume: `%s`
+    public String generateGetValuationMetricsCommand(ShareDTO curShare, Locale locale) {
+        ResourceBundle bundle = ResourceBundle.getBundle("messages", locale);
+        String template = bundle.getString("valuation.metrics.text");
 
-                    📊 *Fundamental Metrics*
-
-                    P/E (Price/Earn): %s
-                    P/B (Price/Book): %s
-                    P/S (Price/Sale): %s
-                    Market Capitalisation: %s
-                    EPS: %s
-                    Book Value: %s
-                  """,
-                String.format("%s", curShare.name()),
-                String.format("%s", curShare.globalQuote().currentPrice()),
-                String.format("%s", curShare.description().replace("'", "").replace("`", "")),
-                String.format("%s", curShare.globalQuote().highPrice()),
-                String.format("%s", curShare.globalQuote().lowPrice()),
-                String.format("%s", curShare.globalQuote().priceChange()),
+        String formatted = MessageFormat.format(template,
+                curShare.name(),
+                curShare.globalQuote().currentPrice(),
+                curShare.description().replace("'", "").replace("`", ""),
+                curShare.globalQuote().highPrice(),
+                curShare.globalQuote().lowPrice(),
+                curShare.globalQuote().priceChange(),
                 curShare.globalQuote().changePercent().replace("%", ""),
-                String.format("%s", curShare.globalQuote().volume()),
+                curShare.globalQuote().volume(),
                 String.format("%.2f", curShare.peRatio()),
                 String.format("%.2f", curShare.pbRatio()),
                 String.format("%.2f", curShare.priceToSales()),
@@ -100,7 +45,7 @@ public class MessageService {
                 String.format("%.2f", curShare.bookValue())
         );
 
-        return escapeMarkdownSymbols(valuationMetricsText);
+        return escapeMarkdownSymbols(formatted);
     }
 
     public String generateProcessingMessage(int dotCount) {
