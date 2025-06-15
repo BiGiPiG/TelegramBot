@@ -34,16 +34,12 @@ public class ShareService {
 
     public ShareDTO calculateValuationMetrics(String ticker) {
         try {
-
             GlobalQuoteDTO globalQuoteDTO = fetchGlobalQuote(ticker);
-
             return fetchShareDTO(ticker).withGlobalQuote(globalQuoteDTO);
         } catch (NumberFormatException e) {
             throw new CalculateValuationException("Error parsing numeric values from API for ticker: " + ticker, e);
         } catch (RestClientException e) {
             throw new ExternalApiException("Network or API error while fetching data for " + ticker, e);
-        } catch (Exception e) {
-            throw new CalculateValuationException("Unexpected error occurred while processing ticker: " + ticker, e);
         }
     }
 
@@ -118,7 +114,9 @@ public class ShareService {
             if (response.getStatusCode().is2xxSuccessful()) {
                 return CompletableFuture.completedFuture(response.getBody());
             } else {
-                throw new SmartAnalysisException("Smart API returned error status: " + response.getStatusCode());
+                return CompletableFuture.failedFuture(
+                        new SmartAnalysisException("Smart API returned error status: " + response.getStatusCode())
+                );
             }
         } catch (HttpStatusCodeException e) {
             throw new SmartAnalysisException("Smart API HTTP error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString(), e);

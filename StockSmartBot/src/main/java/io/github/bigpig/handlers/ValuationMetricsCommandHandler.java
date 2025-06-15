@@ -28,11 +28,8 @@ public class ValuationMetricsCommandHandler implements BotCommandHandler {
 
     @Override
     public void handle(long chatId, String arg) {
-        ShareDTO curShare;
-        curShare = shareService.calculateValuationMetrics(arg);
-
+        ShareDTO curShare = shareService.calculateValuationMetrics(arg);
         String cmdText = messageService.generateGetValuationMetricsCommand(curShare);
-
         telegramSender.sendMessage(chatId, cmdText);
     }
 }

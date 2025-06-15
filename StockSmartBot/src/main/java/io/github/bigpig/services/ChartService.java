@@ -2,6 +2,10 @@ package io.github.bigpig.services;
 
 import io.github.bigpig.dto.DailyDataDTO;
 import io.github.bigpig.dto.StockDataDTO;
+import io.github.bigpig.exceptions.ExternalApiException;
+import io.github.bigpig.exceptions.NullResponseBodyException;
+import io.github.bigpig.exceptions.StockDataException;
+import lombok.extern.slf4j.Slf4j;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.LineAndShapeRenderer;
@@ -26,6 +30,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 @Service
+@Slf4j
 public class ChartService {
 
     private static final int MAX_DAYS = 50;
@@ -49,7 +54,7 @@ public class ChartService {
 
         // Получение JSON
         ResponseEntity<StockDataDTO> stockDataResponse = restTemplate.getForEntity(urlString, StockDataDTO.class);
-        Map<LocalDate, DailyDataDTO> timeSeriesDaily = getLocalDateDailyDataDTOMap(ticker, stockDataResponse);
+        Map<LocalDate, DailyDataDTO> timeSeriesDaily = getDataMap(ticker, stockDataResponse);
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         Map<LocalDate, DailyDataDTO> sortedTimeSeries = new TreeMap<>(timeSeriesDaily);
         sortedTimeSeries.entrySet().stream()
@@ -66,15 +71,20 @@ public class ChartService {
         ChartUtils.saveChartAsPNG(outputFile, chart, 800, 600);
     }
 
-    private static Map<LocalDate, DailyDataDTO> getLocalDateDailyDataDTOMap(String ticker, ResponseEntity<StockDataDTO> stockDataResponse) throws IOException {
-        if (stockDataResponse.getStatusCode().isError() || stockDataResponse.getBody() == null) {
-            throw new IOException("Нет данных о ценах для " + ticker);
+    private static Map<LocalDate, DailyDataDTO> getDataMap(String ticker, ResponseEntity<StockDataDTO> stockDataResponse) {
+
+        if (stockDataResponse.getStatusCode().isError()) {
+            throw new ExternalApiException("Failed to fetch StockDataDTO. Status: " + stockDataResponse.getStatusCode());
+        }
+        if (stockDataResponse.getBody() == null) {
+            throw new NullResponseBodyException("Failed to fetch StockDataDTO. Response body is null");
         }
 
         StockDataDTO stockData = stockDataResponse.getBody();
         Map<LocalDate, DailyDataDTO> timeSeriesDaily = stockData.timeSeriesDaily();
+
         if (timeSeriesDaily == null || timeSeriesDaily.isEmpty()) {
-            throw new IOException("Пустые данные по акциям для " + ticker);
+            throw new StockDataException("Пустые данные по акциям для " + ticker);
         }
 
         return timeSeriesDaily;

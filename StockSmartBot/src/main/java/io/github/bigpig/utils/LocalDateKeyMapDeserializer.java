@@ -19,7 +19,7 @@ public class LocalDateKeyMapDeserializer extends JsonDeserializer<Map<LocalDate,
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Override
-    public Map<LocalDate, DailyDataDTO> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public Map<LocalDate, DailyDataDTO> deserialize(JsonParser p, DeserializationContext deserializationContext) throws IOException {
         ObjectMapper mapper = (ObjectMapper) p.getCodec();
         JsonNode node = mapper.readTree(p);
 

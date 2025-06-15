@@ -52,21 +52,25 @@ public class AsyncSmartAnalyseCommandHandler implements BotCommandHandler {
         }, 1, 1, TimeUnit.SECONDS);
 
         shareService.getSmartAnalyse(arg)
-                .thenAccept(result -> {
-                    finishProgressAnimation(executor, chatId, messageId);
-                    telegramSender.sendMessage(chatId, messageService.generateSmartAnalyseResult(result));
-                })
-                .exceptionally(ex -> {
-                    finishProgressAnimation(executor, chatId, messageId);
+            .thenAccept(result -> {
+            finishProgressAnimation(executor, chatId, messageId);
+            telegramSender.sendMessage(chatId, messageService.generateSmartAnalyseResult(result));
+        }).exceptionally(ex -> {
+            handleSmartAnalyseError(executor, chatId, messageId, ex);
+            return null;
+        });
+    }
 
-                    Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
-                    String errorMessage = (cause instanceof SmartAnalysisException)
-                            ? cause.getMessage()
-                            : "Произошла неизвестная ошибка при анализе.";
+    private void handleSmartAnalyseError(ScheduledExecutorService executor, long chatId, int messageId, Throwable ex) {
+        finishProgressAnimation(executor, chatId, messageId);
 
-                    telegramSender.sendMessage(chatId, messageService.generateErrorMessage(errorMessage));
-                    return null;
-                });
+        Throwable cause = (ex.getCause() != null) ? ex.getCause() : ex;
+
+        if (cause instanceof SmartAnalysisException) {
+            throw (SmartAnalysisException) cause;
+        } else {
+            throw new SmartAnalysisException("Произошла неизвестная ошибка при анализе.", cause);
+        }
     }
 
     private void finishProgressAnimation(ScheduledExecutorService executor, long chatId, int messageId) {
