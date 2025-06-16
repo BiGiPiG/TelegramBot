@@ -25,7 +25,7 @@ public class ChartCommandHandler implements BotCommandHandler {
 
     @Override
     public boolean canHandle(String command) {
-        return "/getChart".equals(command);
+        return "/chart".equals(command);
     }
 
     @Override

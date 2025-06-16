@@ -37,9 +37,9 @@ public class ShareService {
             GlobalQuoteDTO globalQuoteDTO = fetchGlobalQuote(ticker);
             return fetchShareDTO(ticker).withGlobalQuote(globalQuoteDTO);
         } catch (NumberFormatException e) {
-            throw new CalculateValuationException("Error parsing numeric values from API for ticker: " + ticker, e);
+            throw new CalculateValuationException("Error parsing numeric values from API for ticker: " + ticker);
         } catch (RestClientException e) {
-            throw new ExternalApiException("Network or API error while fetching data for " + ticker, e);
+            throw new ExternalApiException("Network or API error while fetching data for " + ticker);
         }
     }
 
@@ -119,11 +119,11 @@ public class ShareService {
                 );
             }
         } catch (HttpStatusCodeException e) {
-            throw new SmartAnalysisException("Smart API HTTP error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString(), e);
+            throw new SmartAnalysisException("Smart API HTTP error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
         } catch (ResourceAccessException e) {
-            throw new SmartAnalysisException("Cannot reach Smart Analysis API. Please check if the server is running.", e);
+            throw new SmartAnalysisException("Cannot reach Smart Analysis API. Please check if the server is running.");
         } catch (Exception e) {
-            throw new SmartAnalysisException("Unexpected error while processing smart analysis for " + ticker + Arrays.toString(e.getStackTrace()), e);
+            throw new SmartAnalysisException("Unexpected error while processing smart analysis for " + ticker + Arrays.toString(e.getStackTrace()));
         }
     }
 }

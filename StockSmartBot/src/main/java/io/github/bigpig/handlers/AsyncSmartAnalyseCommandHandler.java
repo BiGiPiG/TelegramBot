@@ -29,7 +29,7 @@ public class AsyncSmartAnalyseCommandHandler implements BotCommandHandler {
 
     @Override
     public boolean canHandle(String command) {
-        return "/getSmartAnalyse".equals(command);
+        return "/ai_analysis".equals(command);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class AsyncSmartAnalyseCommandHandler implements BotCommandHandler {
         if (cause instanceof SmartAnalysisException) {
             throw (SmartAnalysisException) cause;
         } else {
-            throw new SmartAnalysisException("Произошла неизвестная ошибка при анализе.", cause);
+            throw new SmartAnalysisException("Произошла неизвестная ошибка при анализе.");
         }
     }
 

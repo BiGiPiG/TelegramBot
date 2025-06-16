@@ -1,5 +1,6 @@
 package io.github.bigpig.handlers;
 
+import io.github.bigpig.exceptions.IllegalCommandArgException;
 import io.github.bigpig.utils.BotCommandHandler;
 import org.springframework.stereotype.Component;
 
@@ -38,9 +39,7 @@ public class ChooseLangCommandHandler implements BotCommandHandler {
                 valuationMetricsCommandHandler.setLocale(Locale.forLanguageTag("ru"));
                 break;
             default:
-                //TODO
-                //throw UnknownLangException
-                break;
+                throw new IllegalCommandArgException("Передан некорректный аргумент команды /set_lang");
         }
     }
 }

@@ -29,7 +29,7 @@ public class ValuationMetricsCommandHandler implements BotCommandHandler {
 
     @Override
     public boolean canHandle(String command) {
-        return "/getValuationMetrics".equals(command);
+        return "/metrics".equals(command);
     }
 
     @Override
