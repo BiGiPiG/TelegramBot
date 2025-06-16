@@ -1,5 +1,6 @@
 package io.github.bigpig.controllers;
 
+import io.github.bigpig.exceptions.IllegalCommandArgException;
 import io.github.bigpig.handlers.BotExceptionHandler;
 import io.github.bigpig.services.MessageService;
 import io.github.bigpig.utils.BotCommandHandler;
@@ -53,7 +54,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             commandHandlers.stream()
                     .filter(h -> h.canHandle(message[0]))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown command: " + message[0]))
+                    .orElseThrow(() -> new IllegalCommandArgException("Unknown command: " + message[0]))
                     .handle(id, arg);
         } catch (Exception e) {
             String errorMsg = messageService.generateErrorMessage(botExceptionHandler.handleException(e));

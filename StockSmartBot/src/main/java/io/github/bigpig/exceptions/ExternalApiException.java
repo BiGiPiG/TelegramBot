@@ -1,11 +1,7 @@
 package io.github.bigpig.exceptions;
 
-public class ExternalApiException extends RuntimeException {
+public class ExternalApiException extends ServiceException {
     public ExternalApiException(String message) {
         super(message);
-    }
-
-    public ExternalApiException(String message, Throwable cause) {
-        super(message, cause);
     }
 }
