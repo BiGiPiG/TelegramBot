@@ -35,7 +35,11 @@ public class ShareService {
     public ShareDTO calculateValuationMetrics(String ticker) {
         try {
             GlobalQuoteDTO globalQuoteDTO = fetchGlobalQuote(ticker);
-            return fetchShareDTO(ticker).withGlobalQuote(globalQuoteDTO);
+            ShareDTO share = fetchShareDTO(ticker).withGlobalQuote(globalQuoteDTO);
+            if (share == null) {
+                throw new ShareNotFoundException("Share not found for ticker: " + ticker);
+            }
+            return share;
         } catch (NumberFormatException e) {
             throw new CalculateValuationException("Error parsing numeric values from API for ticker: " + ticker);
         } catch (RestClientException e) {
