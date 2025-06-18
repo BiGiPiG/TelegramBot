@@ -1,5 +1,6 @@
 package io.github.bigpig.handlers;
 
+import io.github.bigpig.exceptions.IllegalCommandArgException;
 import io.github.bigpig.services.ChartService;
 import io.github.bigpig.utils.BotCommandHandler;
 import io.github.bigpig.utils.TelegramSender;
@@ -30,6 +31,11 @@ public class ChartCommandHandler implements BotCommandHandler {
 
     @Override
     public void handle(long chatId, String arg) throws IOException, TelegramApiException {
+
+        if (arg == null) {
+            throw new IllegalCommandArgException("Command argument is null");
+        }
+
         Path chartPath = Paths.get("tmpDir", arg + ".png");
         try {
             chartService.generateChart(arg);

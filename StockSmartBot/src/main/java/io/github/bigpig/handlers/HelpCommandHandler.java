@@ -1,5 +1,6 @@
 package io.github.bigpig.handlers;
 
+import io.github.bigpig.exceptions.IllegalCommandArgException;
 import io.github.bigpig.services.MessageService;
 import io.github.bigpig.utils.BotCommandHandler;
 import io.github.bigpig.utils.TelegramSender;
@@ -29,6 +30,11 @@ public class HelpCommandHandler implements BotCommandHandler {
 
     @Override
     public void handle(long chatId, String arg) {
+
+        if (arg != null) {
+            throw new IllegalCommandArgException("Command argument is not null");
+        }
+
         telegramSender.sendMessage(chatId, messageService.generateHelpCommand(locale));
     }
 }

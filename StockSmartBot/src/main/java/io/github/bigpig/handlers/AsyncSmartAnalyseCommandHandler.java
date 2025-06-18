@@ -1,5 +1,6 @@
 package io.github.bigpig.handlers;
 
+import io.github.bigpig.exceptions.IllegalCommandArgException;
 import io.github.bigpig.exceptions.SmartAnalysisException;
 import io.github.bigpig.services.MessageService;
 import io.github.bigpig.services.ShareService;
@@ -34,6 +35,10 @@ public class AsyncSmartAnalyseCommandHandler implements BotCommandHandler {
 
     @Override
     public void handle(long chatId, String arg) {
+
+        if (arg == null) {
+            throw new IllegalCommandArgException("Command argument is null");
+        }
 
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         AtomicInteger dotCount = new AtomicInteger(1);
