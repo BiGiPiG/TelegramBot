@@ -13,6 +13,7 @@ import org.jfree.chart.title.TextTitle;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
@@ -29,8 +30,8 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.TreeMap;
 
-@Service
 @Slf4j
+@Service
 public class ChartService {
 
     private static final int MAX_DAYS = 50;
@@ -45,16 +46,24 @@ public class ChartService {
     }
 
     public void generateChart(String ticker) throws IOException {
-//        String urlString = UriComponentsBuilder.fromUriString("https://www.alphavantage.co/query")
-//                .queryParam("function", "TIME_SERIES_DAILY")
-//                .queryParam("symbol", ticker)
-//                .queryParam("apikey", apiKey)
-//                .toUriString();
-        String urlString = "https://run.mocky.io/v3/f7165331-8668-4b50-bfee-9ec88c072e39";
+
+        log.info("Starting chart generation for ticker: {}", ticker);
+
+        String urlString = UriComponentsBuilder.fromUriString("https://www.alphavantage.co/query")
+                .queryParam("function", "TIME_SERIES_DAILY")
+                .queryParam("symbol", ticker)
+                .queryParam("apikey", apiKey)
+                .toUriString();
+
+        //String urlString = "https://run.mocky.io/v3/f7165331-8668-4b50-bfee-9ec88c072e39";
 
         // Получение JSON
+        log.info("Fetching stock data for ticker: {}", ticker);
         ResponseEntity<StockDataDTO> stockDataResponse = restTemplate.getForEntity(urlString, StockDataDTO.class);
         Map<LocalDate, DailyDataDTO> timeSeriesDaily = getDataMap(ticker, stockDataResponse);
+
+        log.info("Retrieved {} daily records for ticker: {}", timeSeriesDaily.size(), ticker);
+
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         Map<LocalDate, DailyDataDTO> sortedTimeSeries = new TreeMap<>(timeSeriesDaily);
         sortedTimeSeries.entrySet().stream()
@@ -63,12 +72,17 @@ public class ChartService {
 
 
         // Построение графика
+        log.info("Building chart for ticker: {}", ticker);
         JFreeChart chart = buildChart(ticker, dataset);
 
         // Сохранение графика
         Path chartPath = Paths.get( "tmpDir", ticker + ".png");
         File outputFile = new File(chartPath.toString());
+
+        log.info("Saving chart to: {}", chartPath);
         ChartUtils.saveChartAsPNG(outputFile, chart, 800, 600);
+
+        log.info("Successfully generated chart for ticker: {}", ticker);
     }
 
     private static Map<LocalDate, DailyDataDTO> getDataMap(String ticker, ResponseEntity<StockDataDTO> stockDataResponse) {
@@ -109,7 +123,6 @@ public class ChartService {
         plot.setOutlineVisible(false);
 
         // Формат осей
-
         NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
         rangeAxis.setTickLabelFont(new Font("Arial", Font.PLAIN, 12));

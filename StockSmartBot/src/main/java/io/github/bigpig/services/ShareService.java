@@ -5,6 +5,7 @@ import io.github.bigpig.dto.GlobalQuoteDTO;
 import io.github.bigpig.dto.GlobalQuoteResponse;
 import io.github.bigpig.dto.ShareDTO;
 import io.github.bigpig.exceptions.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
@@ -18,6 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @Service
 public class ShareService {
 
@@ -33,17 +35,22 @@ public class ShareService {
     }
 
     public ShareDTO calculateValuationMetrics(String ticker) {
+        log.info("Calculating valuation metrics for ticker: {}", ticker);
         try {
+            log.info("Fetching global quotes for ticker: {}", ticker);
             GlobalQuoteDTO globalQuoteDTO = fetchGlobalQuote(ticker);
+
+            log.info("Fetching share for ticker: {}", ticker);
             ShareDTO share = fetchShareDTO(ticker).withGlobalQuote(globalQuoteDTO);
             if (share == null) {
                 throw new ShareNotFoundException("Share not found for ticker: " + ticker);
             }
+            log.info("Successfully calculated metrics for ticker: {}", ticker);
             return share;
         } catch (NumberFormatException e) {
             throw new CalculateValuationException("Error parsing numeric values from API for ticker: " + ticker);
         } catch (RestClientException e) {
-            throw new ExternalApiException("Network or API error while fetching data for " + ticker);
+            throw new ExternalApiException("Network or API error while fetching data for ticker: " + ticker);
         }
     }
 
