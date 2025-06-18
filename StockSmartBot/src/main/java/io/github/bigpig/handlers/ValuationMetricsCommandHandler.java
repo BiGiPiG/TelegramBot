@@ -38,7 +38,7 @@ public class ValuationMetricsCommandHandler implements BotCommandHandler {
     @Override
     public void handle(long chatId, String arg) {
 
-        log.info("ValuationMetricsCommandHandler starte handling command");
+        log.info("ValuationMetricsCommandHandler started handling command");
 
         if (arg == null) {
             throw new IllegalCommandArgException("Command argument is null");
