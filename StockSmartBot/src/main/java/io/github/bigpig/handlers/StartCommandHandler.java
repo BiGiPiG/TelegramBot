@@ -5,12 +5,14 @@ import io.github.bigpig.services.MessageService;
 import io.github.bigpig.utils.BotCommandHandler;
 import io.github.bigpig.utils.TelegramSender;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
 
-@Component
+@Slf4j
 @Setter
+@Component
 public class StartCommandHandler implements BotCommandHandler {
 
     private final MessageService messageService;
@@ -31,10 +33,13 @@ public class StartCommandHandler implements BotCommandHandler {
     @Override
     public void handle(long chatId, String arg) {
 
-        if (arg == null) {
-            throw new IllegalCommandArgException("Command argument is null");
+        log.info("StartCommandHandler started handling command");
+
+        if (arg != null) {
+            throw new IllegalCommandArgException("Command argument is not null");
         }
 
         telegramSender.sendMessage(chatId, messageService.generateStartCommand(locale));
+        log.info("StartCommandHandler finished handling command successfully");
     }
 }

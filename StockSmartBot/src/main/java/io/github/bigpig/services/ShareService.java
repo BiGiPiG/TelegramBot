@@ -101,8 +101,6 @@ public class ShareService {
             ShareDTO share = calculateValuationMetrics(ticker);
             String jsonBody = objectMapper.writeValueAsString(share);
 
-            System.out.println(jsonBody);
-
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 

@@ -4,6 +4,7 @@ import io.github.bigpig.exceptions.IllegalCommandArgException;
 import io.github.bigpig.services.ChartService;
 import io.github.bigpig.utils.BotCommandHandler;
 import io.github.bigpig.utils.TelegramSender;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -12,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Slf4j
 @Component
 public class ChartCommandHandler implements BotCommandHandler {
 
@@ -32,6 +34,8 @@ public class ChartCommandHandler implements BotCommandHandler {
     @Override
     public void handle(long chatId, String arg) throws IOException, TelegramApiException {
 
+        log.info("ChartCommandHandler started handling command with argument: {}", arg);
+
         if (arg == null) {
             throw new IllegalCommandArgException("Command argument is null");
         }
@@ -46,6 +50,7 @@ public class ChartCommandHandler implements BotCommandHandler {
             telegramSender.sendPhoto(chatId, chartPath);
         } finally {
             Files.deleteIfExists(chartPath);
+            log.info("ChartCommandHandler finished handling command with argument: {}", arg);
         }
     }
 }

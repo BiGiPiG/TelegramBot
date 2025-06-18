@@ -6,14 +6,17 @@ import io.github.bigpig.services.MessageService;
 import io.github.bigpig.services.ShareService;
 import io.github.bigpig.utils.BotCommandHandler;
 import io.github.bigpig.utils.TelegramSender;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 @Component
 public class AsyncSmartAnalyseCommandHandler implements BotCommandHandler {
 
@@ -36,12 +39,15 @@ public class AsyncSmartAnalyseCommandHandler implements BotCommandHandler {
     @Override
     public void handle(long chatId, String arg) {
 
+        log.info("AsyncSmartAnalyseCommandHandler started handling command with argument: {}", arg);
+
         if (arg == null) {
             throw new IllegalCommandArgException("Command argument is null");
         }
 
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         AtomicInteger dotCount = new AtomicInteger(1);
+        CompletableFuture<Void> analysisFuture = new CompletableFuture<>();
 
         int messageId = telegramSender.sendMessage(chatId, messageService.generateProcessingMessage(0));
 
@@ -52,7 +58,7 @@ public class AsyncSmartAnalyseCommandHandler implements BotCommandHandler {
                         messageService.generateProcessingMessage(dotCount.getAndIncrement() % 4)
                 );
             } catch (TelegramApiException e) {
-                telegramSender.sendMessage(chatId, "Ошибка обновления статуса.");
+                log.warn("Progress update failed for chat {}", chatId);
             }
         }, 1, 1, TimeUnit.SECONDS);
 
@@ -61,20 +67,25 @@ public class AsyncSmartAnalyseCommandHandler implements BotCommandHandler {
             finishProgressAnimation(executor, chatId, messageId);
             telegramSender.sendMessage(chatId, messageService.generateSmartAnalyseResult(result));
         }).exceptionally(ex -> {
-            handleSmartAnalyseError(executor, chatId, messageId, ex);
+            SmartAnalysisException exception = handleSmartAnalyseError(executor, chatId, messageId, ex);
+            analysisFuture.completeExceptionally(exception);
             return null;
         });
+
+        analysisFuture.join();
+
+        log.info("AsyncSmartAnalyseCommandHandler finished handling command with argument: {}", arg);
     }
 
-    private void handleSmartAnalyseError(ScheduledExecutorService executor, long chatId, int messageId, Throwable ex) {
+    private SmartAnalysisException handleSmartAnalyseError(ScheduledExecutorService executor, long chatId, int messageId, Throwable ex) {
         finishProgressAnimation(executor, chatId, messageId);
 
         Throwable cause = (ex.getCause() != null) ? ex.getCause() : ex;
 
         if (cause instanceof SmartAnalysisException) {
-            throw (SmartAnalysisException) cause;
+            return (SmartAnalysisException) cause;
         } else {
-            throw new SmartAnalysisException("Произошла неизвестная ошибка при анализе.");
+            return new SmartAnalysisException("Произошла неизвестная ошибка при анализе.");
         }
     }
 
@@ -83,7 +94,7 @@ public class AsyncSmartAnalyseCommandHandler implements BotCommandHandler {
         try {
             telegramSender.deleteMessage(chatId, messageId);
         } catch (TelegramApiException e) {
-            telegramSender.sendMessage(chatId, "Не удалось удалить сообщение прогресса.");
+            log.warn("Finishing progress failed for chat {}", chatId);
         }
     }
 }

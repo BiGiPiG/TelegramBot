@@ -7,12 +7,14 @@ import io.github.bigpig.services.ShareService;
 import io.github.bigpig.utils.BotCommandHandler;
 import io.github.bigpig.utils.TelegramSender;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
 
-@Component
+@Slf4j
 @Setter
+@Component
 public class ValuationMetricsCommandHandler implements BotCommandHandler {
 
     private final MessageService messageService;
@@ -36,6 +38,8 @@ public class ValuationMetricsCommandHandler implements BotCommandHandler {
     @Override
     public void handle(long chatId, String arg) {
 
+        log.info("ValuationMetricsCommandHandler starte handling command");
+
         if (arg == null) {
             throw new IllegalCommandArgException("Command argument is null");
         }
@@ -43,5 +47,7 @@ public class ValuationMetricsCommandHandler implements BotCommandHandler {
         ShareDTO curShare = shareService.calculateValuationMetrics(arg);
         String cmdText = messageService.generateGetValuationMetricsCommand(curShare, locale);
         telegramSender.sendMessage(chatId, cmdText);
+
+        log.info("ValuationMetricsCommandHandler finished handling command successfully");
     }
 }

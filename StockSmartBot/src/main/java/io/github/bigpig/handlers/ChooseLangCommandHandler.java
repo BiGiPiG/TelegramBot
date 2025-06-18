@@ -2,24 +2,22 @@ package io.github.bigpig.handlers;
 
 import io.github.bigpig.exceptions.IllegalCommandArgException;
 import io.github.bigpig.utils.BotCommandHandler;
-import io.github.bigpig.utils.TelegramSender;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
 
+@Slf4j
 @Component
 public class ChooseLangCommandHandler implements BotCommandHandler {
-
-    private final TelegramSender telegramSender;
 
     private final BotExceptionHandler botExceptionHandler;
     private final HelpCommandHandler helpCommandHandler;
     private final StartCommandHandler startCommandHandler;
     private final ValuationMetricsCommandHandler valuationMetricsCommandHandler;
 
-    public ChooseLangCommandHandler(TelegramSender telegramSender, HelpCommandHandler helpCommandHandler, StartCommandHandler startCommandHandler,
+    public ChooseLangCommandHandler(HelpCommandHandler helpCommandHandler, StartCommandHandler startCommandHandler,
                                     ValuationMetricsCommandHandler valuationMetricsCommandHandler, BotExceptionHandler botExceptionHandler) {
-        this.telegramSender = telegramSender;
         this.helpCommandHandler = helpCommandHandler;
         this.startCommandHandler = startCommandHandler;
         this.valuationMetricsCommandHandler = valuationMetricsCommandHandler;
@@ -34,27 +32,34 @@ public class ChooseLangCommandHandler implements BotCommandHandler {
     @Override
     public void handle(long chatId, String arg) {
 
+        log.info("ChooseLangCommandHandler started handling command with argument: {}", arg);
+
         if (arg == null) {
             throw new IllegalCommandArgException("Command argument is null");
         }
 
+        Locale locale;
         switch (arg) {
             case "EN":
-                helpCommandHandler.setLocale(Locale.ENGLISH);
-                startCommandHandler.setLocale(Locale.ENGLISH);
-                valuationMetricsCommandHandler.setLocale(Locale.ENGLISH);
-                botExceptionHandler.setLocale(Locale.ENGLISH);
-                telegramSender.sendMessage(chatId, "Language was successfully changed");
+                locale = Locale.forLanguageTag("en");
+                setLocaleForAllHandlers(locale);
+                log.info("Language changed to English for chat {}", chatId);
                 break;
             case "RU":
-                helpCommandHandler.setLocale(Locale.forLanguageTag("ru"));
-                startCommandHandler.setLocale(Locale.forLanguageTag("ru"));
-                valuationMetricsCommandHandler.setLocale(Locale.forLanguageTag("ru"));
-                botExceptionHandler.setLocale(Locale.forLanguageTag("ru"));
-                telegramSender.sendMessage(chatId, "Язык был успешно изменен");
+                locale = Locale.forLanguageTag("ru");
+                setLocaleForAllHandlers(locale);
+                log.info("Language changed to Russian for chat {}", chatId);
                 break;
             default:
-                throw new IllegalCommandArgException("Передан некорректный аргумент команды /set_lang");
+                throw new IllegalCommandArgException("Unsupported language: " + arg);
         }
+        log.info("ChooseLangCommandHandler finished successfully handling command with argument: {}", arg);
+    }
+
+    private void setLocaleForAllHandlers(Locale locale) {
+        helpCommandHandler.setLocale(locale);
+        startCommandHandler.setLocale(locale);
+        valuationMetricsCommandHandler.setLocale(locale);
+        botExceptionHandler.setLocale(locale);
     }
 }

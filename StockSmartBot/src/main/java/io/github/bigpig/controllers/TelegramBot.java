@@ -48,15 +48,22 @@ public class TelegramBot extends TelegramLongPollingBot {
         var user = msg.getFrom();
         long id = user.getId();
         String[] message = msg.getText().split(" ");
+        String command = message[0];
         String arg = message.length > 1 ? message[1] : null;
 
         try {
+            log.info("Received command {} from chat {} with arg: {}",
+                    command, id, arg);
             commandHandlers.stream()
-                    .filter(h -> h.canHandle(message[0]))
+                    .filter(h -> h.canHandle(command))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalCommandArgException("Unknown command: " + message[0]))
+                    .orElseThrow(() -> new IllegalCommandArgException("Unknown command: " + command))
                     .handle(id, arg);
+            log.info("Command {} processed successfully for chat {}", command, id);
         } catch (Exception e) {
+            log.error("Error processing command {} for chat {}:{}",
+                    command, id, e.getMessage());
+
             String errorMsg = messageService.generateErrorMessage(botExceptionHandler.handleException(e));
             telegramSender.sendMessage(id, errorMsg);
         }
