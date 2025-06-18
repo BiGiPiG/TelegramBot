@@ -1,24 +1,33 @@
 package io.github.bigpig.handlers;
 
 import io.github.bigpig.exceptions.*;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+@Setter
 @Component
-@RequiredArgsConstructor
 public class BotExceptionHandler {
 
+    private Locale locale;
+
+    public BotExceptionHandler() {
+        this.locale = Locale.ENGLISH;
+    }
+
+    private ResourceBundle getMessages() {
+        return ResourceBundle.getBundle("messages", locale);
+    }
+
     public String handleException(Exception e) {
-        switch (e) {
-            case ServiceException ex -> {
-                return "❌ Произошла ошибка. Попробуйте позже";
-            }
-            case UserInputException ex -> {
-                return "⚠️ Передан некорректный аргумент команды или неизвестная команда.";
-            }
-            case null, default -> {
-                return "❗ Произошла ошибка. Попробуйте снова позже.";
-            }
-        }
+        ResourceBundle messages = getMessages();
+        String key = switch (e) {
+            case ServiceException ex -> "error.service";
+            case UserInputException ex -> "error.user_input";
+            case null, default -> "error.unknown";
+        };
+        return messages.getString(key);
     }
 }
